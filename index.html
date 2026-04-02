@@ -33,13 +33,16 @@
 
   --grad:linear-gradient(135deg,#c9a96e 0%,#e8c98a 45%,#2dd4bf 100%);
   --grad2:linear-gradient(90deg,#c9a96e,#e8c98a);
+  --grad3:linear-gradient(135deg,#c9a96e 0%,#e8c98a 100%);
 
   --serif:'Cormorant Garamond',Georgia,serif;
   --sans:'Syne',system-ui,sans-serif;
   --mono:'JetBrains Mono',monospace;
 
-  --r:14px;
-  --t:.22s ease;
+  --r:14px;--t:.22s ease;
+
+  --shadow-gold: 0 0 0 1px rgba(201,169,110,.08), 0 8px 40px rgba(201,169,110,.12), 0 2px 8px rgba(0,0,0,.4);
+  --shadow-subtle: 0 2px 16px rgba(0,0,0,.3), 0 0 0 1px rgba(255,255,255,.02);
 }
 
 /* ── RESET ──────────────────────────────────────── */
@@ -221,9 +224,9 @@ h2.st strong{font-style:normal;font-weight:600;}
 .hcard{
   background:var(--s1);padding:40px 30px;
   position:relative;overflow:hidden;
-  transition:background var(--t);
+  transition:background var(--t),box-shadow var(--t);
 }
-.hcard:hover{background:var(--s2);}
+.hcard:hover{background:var(--s2);box-shadow:inset 0 0 40px rgba(201,169,110,.03);}
 .hcard::before{
   content:'';position:absolute;top:0;left:0;right:0;height:1px;
   background:var(--grad);opacity:0;transition:opacity var(--t);
@@ -329,7 +332,7 @@ h2.st strong{font-style:normal;font-weight:600;}
   background:radial-gradient(circle,rgba(201,169,110,.09) 0%,transparent 65%);
   border-radius:50%;pointer-events:none;
 }
-.prc{background:var(--s1);border:1px solid var(--b0);border-radius:22px;padding:48px;text-align:center;position:relative;overflow:hidden;}
+.prc{background:var(--s1);border:1px solid var(--b0);border-radius:22px;padding:48px;text-align:center;position:relative;overflow:hidden;box-shadow:var(--shadow-subtle);}
 .prc::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:var(--grad);}
 .prbdg{display:inline-block;background:var(--grad);font-family:var(--mono);font-size:10px;font-weight:500;letter-spacing:.14em;color:#060608;padding:6px 18px;border-radius:100px;margin-bottom:32px;text-transform:uppercase;}
 .pramt{font-family:var(--serif);font-style:italic;font-weight:300;font-size:88px;letter-spacing:-5px;line-height:1;margin-bottom:8px;background:var(--grad2);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
@@ -493,6 +496,60 @@ textarea::placeholder,.uinp::placeholder{color:var(--ink4);}
 .reveal{opacity:0;transform:translateY(24px);transition:opacity .7s ease,transform .7s ease;}
 .reveal.visible{opacity:1;transform:translateY(0);}
 
+/* ── TEAM ──────────────────────────────────────── */
+.tgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.tcard{
+  background:var(--s1);border:1px solid var(--b0);border-radius:20px;
+  padding:32px 24px;text-align:center;position:relative;overflow:hidden;
+  transition:border-color var(--t),transform .32s cubic-bezier(.2,.8,.3,1);
+  cursor:default;
+}
+.tcard:hover{border-color:rgba(201,169,110,.28);transform:translateY(-5px);}
+.tcard::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:var(--grad);opacity:0;transition:opacity var(--t);}
+.tcard:hover::before{opacity:1;}
+.tcard::after{
+  content:'';position:absolute;top:-60px;left:50%;transform:translateX(-50%);
+  width:160px;height:160px;border-radius:50%;pointer-events:none;
+  background:radial-gradient(circle,rgba(201,169,110,.06) 0%,transparent 70%);
+}
+.tav{
+  width:72px;height:72px;border-radius:50%;margin:0 auto 18px;
+  border:1px solid rgba(201,169,110,.2);position:relative;z-index:1;
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;background:var(--s2);overflow:hidden;
+  transition:border-color var(--t);
+}
+.tcard:hover .tav{border-color:rgba(201,169,110,.5);}
+.tav img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+.tname{font-family:var(--serif);font-style:italic;font-weight:300;font-size:20px;letter-spacing:-.4px;margin-bottom:6px;position:relative;z-index:1;}
+.trole{font-family:var(--mono);font-size:10px;color:var(--gold);letter-spacing:.14em;text-transform:uppercase;margin-bottom:14px;position:relative;z-index:1;}
+.tbio{font-size:12px;color:var(--ink3);line-height:1.75;margin-bottom:18px;position:relative;z-index:1;}
+.tsocials{display:flex;gap:8px;justify-content:center;position:relative;z-index:1;}
+.tlink{
+  display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:10px;color:var(--ink3);
+  text-decoration:none;padding:6px 12px;border-radius:100px;
+  border:1px solid var(--b1);background:var(--s2);
+  transition:all var(--t);letter-spacing:.06em;
+}
+.tlink:hover{border-color:rgba(201,169,110,.4);color:var(--gold);background:var(--gold-dim);}
+.tlink svg{width:12px;height:12px;fill:currentColor;flex-shrink:0;}
+
+/* ── ORYNTH BADGE ─────────────────────────────── */
+.orynth-wrap{
+  display:flex;flex-direction:column;align-items:center;gap:16px;
+  padding:48px 24px;
+  border-top:1px solid var(--b0);
+  position:relative;z-index:1;
+}
+.orynth-label{font-family:var(--mono);font-size:10px;color:var(--ink4);letter-spacing:.16em;text-transform:uppercase;}
+.orynth-badge{
+  display:inline-block;border-radius:14px;overflow:hidden;
+  border:1px solid rgba(201,169,110,.12);
+  transition:transform .28s,border-color var(--t),box-shadow var(--t);
+}
+.orynth-badge:hover{transform:translateY(-3px);border-color:rgba(201,169,110,.3);box-shadow:0 10px 40px rgba(201,169,110,.12);}
+
 /* ── RESPONSIVE ─────────────────────────────────── */
 @media(max-width:900px){
   nav{padding:18px 24px;}
@@ -500,7 +557,7 @@ textarea::placeholder,.uinp::placeholder{color:var(--ink4);}
   #hero{padding:130px 24px 80px;}
   .sec{padding:80px 24px;}
   .hgrid{grid-template-columns:1fr 1fr;}
-  .sgrid,.agrid,.wpw,.lgrid{grid-template-columns:1fr;}
+  .sgrid,.agrid,.wpw,.lgrid,.tgrid{grid-template-columns:1fr 1fr;}
   .hstats{flex-wrap:wrap;}
   .hstat{border-right:none;border-bottom:1px solid var(--b0);}
   footer{grid-template-columns:1fr;padding:40px 24px;}
@@ -508,7 +565,7 @@ textarea::placeholder,.uinp::placeholder{color:var(--ink4);}
   .fbox{padding:32px 24px;}
 }
 @media(max-width:600px){
-  .hgrid{grid-template-columns:1fr;}
+  .hgrid,.tgrid{grid-template-columns:1fr;}
 }
 </style>
 </head>
@@ -526,6 +583,7 @@ textarea::placeholder,.uinp::placeholder{color:var(--ink4);}
     <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#whitepaper">Whitepaper</a></li>
     <li><a href="#about">About</a></li>
+    <li><a href="#team">Team</a></li>
     <li><a href="#pricing">Pricing</a></li>
   </ul>
   <button class="nav-cta" onclick="openFlow()"><span>Generate Page →</span></button>
@@ -787,6 +845,76 @@ textarea::placeholder,.uinp::placeholder{color:var(--ink4);}
   </div>
 </section>
 
+<!-- TEAM -->
+<hr class="div">
+<section class="sec" id="team">
+  <div class="reveal">
+    <div class="stag"><span class="stag-num">08 —</span> Team</div>
+    <h2 class="st">The builders<br><strong>behind it.</strong></h2>
+    <p class="ssub">A small team of designers, engineers, and crypto-natives moving fast and building in public.</p>
+  </div>
+  <div class="tgrid reveal">
+    <!-- Real member -->
+    <div class="tcard">
+      <div class="tav">🏛️</div>
+      <div class="tname">arthousebase</div>
+      <div class="trole">Founder & Visionary</div>
+      <div class="tbio">Designer-turned-builder. Obsessed with the intersection of craft and crypto.</div>
+      <div class="tsocials">
+        <a class="tlink" href="https://x.com/arthousebase" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.63 5.905-5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          @arthousebase
+        </a>
+      </div>
+    </div>
+    <!-- Fake members -->
+    <div class="tcard">
+      <div class="tav">⚡</div>
+      <div class="tname">Kael Morins</div>
+      <div class="trole">Lead Engineer</div>
+      <div class="tbio">Solidity dev by day, TypeScript monster by night. Ships zero-bug code (allegedly).</div>
+      <div class="tsocials">
+        <a class="tlink" href="#" onclick="return false;">
+          <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.63 5.905-5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          @kaeldev
+        </a>
+      </div>
+    </div>
+    <div class="tcard">
+      <div class="tav">🎨</div>
+      <div class="tname">Noa Ishikawa</div>
+      <div class="trole">Design & Motion</div>
+      <div class="tbio">Crafts interfaces that feel like premium editorial. Ex-agency, now building in public.</div>
+      <div class="tsocials">
+        <a class="tlink" href="#" onclick="return false;">
+          <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.63 5.905-5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          @noa_ix
+        </a>
+      </div>
+    </div>
+    <div class="tcard">
+      <div class="tav">🔗</div>
+      <div class="tname">Marcus Webb</div>
+      <div class="trole">AI & Infra</div>
+      <div class="tbio">Builds the pipeline that turns raw contracts into polished pages in under 60 seconds.</div>
+      <div class="tsocials">
+        <a class="tlink" href="#" onclick="return false;">
+          <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.63 5.905-5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          @mwebb_ai
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ORYNTH BADGE -->
+<div class="orynth-wrap">
+  <div class="orynth-label">Featured on</div>
+  <a class="orynth-badge" href="https://orynth.dev/projects/deploy-page" target="_blank" rel="noopener">
+    <img src="https://orynth.dev/api/badge/deploy-page?theme=dark&style=default" alt="Featured on Orynth" width="260" height="80" />
+  </a>
+</div>
+
 <!-- FOOTER -->
 <footer>
   <div>
@@ -799,6 +927,7 @@ textarea::placeholder,.uinp::placeholder{color:var(--ink4);}
     <a href="#roadmap">Roadmap</a>
     <a href="#whitepaper">Whitepaper</a>
     <a href="#about">About</a>
+    <a href="#team">Team</a>
     <a href="#legal">Legal</a>
   </div>
 </footer>
