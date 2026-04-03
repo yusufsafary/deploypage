@@ -1,0 +1,1213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DeployPage — Turn Any Contract Into a Landing Page</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a0a;
+  --surface: #111111;
+  --border: #1e1e1e;
+  --border-hover: #2e2e2e;
+  --ink: #f5f5f5;
+  --ink2: #888;
+  --ink3: #444;
+  --accent: #E8521A;
+  --accent2: #ff6b30;
+  --accent-glow: rgba(232,82,26,.25);
+  --serif: 'Cormorant Garamond', serif;
+  --sans: 'Syne', system-ui, sans-serif;
+  --ease: cubic-bezier(.16,1,.3,1);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── CURSOR ── */
+#cur {
+  position: fixed; width: 8px; height: 8px;
+  background: var(--accent); border-radius: 50%;
+  pointer-events: none; z-index: 9999;
+  transform: translate(-50%,-50%);
+  transition: width .25s var(--ease), height .25s var(--ease), opacity .2s;
+  mix-blend-mode: normal;
+}
+#cur.grow { width: 40px; height: 40px; background: var(--accent); opacity: .15; }
+@media (pointer: coarse) { #cur { display: none; } body { cursor: auto; } }
+@media (pointer: fine) { body { cursor: none; } }
+
+/* ── TESTNET BANNER ── */
+#tbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 999;
+  background: var(--accent);
+  padding: 8px 24px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
+  font-size: 11px; letter-spacing: .08em; color: #fff;
+}
+#tbar button { background: none; border: none; color: rgba(255,255,255,.7); cursor: pointer; margin-left: 16px; font-size: 16px; line-height: 1; }
+#tbar button:hover { color: #fff; }
+.pulse { width: 6px; height: 6px; border-radius: 50%; background: #fff; animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 37px; left: 0; right: 0; z-index: 500;
+  padding: 0 48px;
+  height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(10,10,10,.9);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  transition: top .3s var(--ease);
+}
+nav.no-bar { top: 0; }
+.logo {
+  font-family: var(--serif); font-style: italic; font-size: 20px; font-weight: 300;
+  color: var(--ink); letter-spacing: -.2px;
+}
+.logo span { color: var(--accent); }
+.nav-links { display: flex; gap: 36px; list-style: none; }
+.nav-links a {
+  font-size: 11px; font-weight: 500; color: var(--ink3);
+  text-decoration: none; letter-spacing: .1em; text-transform: uppercase;
+  transition: color .2s; position: relative;
+}
+.nav-links a::after {
+  content: ''; position: absolute; bottom: -2px; left: 0; width: 0; height: 1px;
+  background: var(--accent); transition: width .25s var(--ease);
+}
+.nav-links a:hover { color: var(--ink); }
+.nav-links a:hover::after { width: 100%; }
+.nav-cta {
+  background: var(--accent); color: #fff; border: none;
+  padding: 10px 22px; border-radius: 6px;
+  font-family: var(--sans); font-size: 11px; font-weight: 700;
+  letter-spacing: .08em; text-transform: uppercase; cursor: pointer;
+  transition: background .2s, transform .2s var(--ease), box-shadow .2s;
+}
+.nav-cta:hover { background: var(--accent2); transform: translateY(-1px); box-shadow: 0 6px 20px var(--accent-glow); }
+.ham { display: none; background: none; border: none; cursor: pointer; padding: 4px; gap: 5px; flex-direction: column; }
+.ham span { display: block; width: 20px; height: 1.5px; background: var(--ink2); transition: all .3s; }
+.ham.open span:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+.ham.open span:nth-child(2) { opacity: 0; }
+.ham.open span:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+/* ── MOBILE MENU ── */
+.mob {
+  display: none; position: fixed; inset: 0; z-index: 490;
+  background: var(--bg);
+  flex-direction: column; align-items: center; justify-content: center; gap: 32px;
+}
+.mob.open { display: flex; }
+.mob a { font-family: var(--serif); font-size: 40px; font-style: italic; font-weight: 300; color: var(--ink2); text-decoration: none; transition: color .2s; }
+.mob a:hover { color: var(--ink); }
+.mob .mob-cta { background: var(--accent); color: #fff; border: none; padding: 14px 36px; border-radius: 8px; font-family: var(--sans); font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; cursor: pointer; margin-top: 8px; }
+
+/* ── HERO ── */
+#hero {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 140px 48px 80px;
+  text-align: center;
+  position: relative;
+}
+.hero-bg {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse 60% 50% at 50% 60%, rgba(232,82,26,.07) 0%, transparent 70%);
+}
+.hero-inner { position: relative; z-index: 1; }
+.badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  border: 1px solid var(--border-hover); border-radius: 100px;
+  padding: 6px 16px; margin-bottom: 40px;
+  font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink3);
+  animation: up .8s var(--ease) both;
+}
+.badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+h1 {
+  font-family: var(--serif); font-weight: 300; font-style: italic;
+  font-size: clamp(64px, 12vw, 140px);
+  line-height: .85; letter-spacing: -4px;
+  margin-bottom: 28px;
+  animation: up .8s .1s var(--ease) both;
+}
+h1 strong {
+  font-style: normal; font-weight: 600; color: var(--accent); display: block;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.sub {
+  font-size: clamp(14px, 1.8vw, 17px); color: var(--ink2);
+  max-width: 380px; margin: 0 auto 48px; line-height: 1.75;
+  animation: up .8s .18s var(--ease) both;
+}
+.hbtns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; animation: up .8s .26s var(--ease) both; }
+.btn-primary {
+  padding: 15px 32px; background: var(--accent); color: #fff; border: none; border-radius: 8px;
+  font-family: var(--sans); font-size: 13px; font-weight: 700; cursor: pointer;
+  letter-spacing: .06em; text-transform: uppercase;
+  transition: background .2s, transform .25s var(--ease), box-shadow .2s;
+}
+.btn-primary:hover { background: var(--accent2); transform: translateY(-3px); box-shadow: 0 12px 40px var(--accent-glow); }
+.btn-ghost {
+  padding: 15px 32px; background: transparent; color: var(--ink2); border: 1px solid var(--border-hover); border-radius: 8px;
+  font-family: var(--sans); font-size: 13px; font-weight: 500; cursor: pointer;
+  letter-spacing: .04em; text-transform: uppercase;
+  transition: border-color .2s, color .2s, transform .25s var(--ease);
+}
+.btn-ghost:hover { border-color: var(--accent); color: var(--ink); transform: translateY(-3px); }
+
+/* hero numbers */
+.hnums {
+  display: flex; justify-content: center; gap: 0;
+  margin-top: 80px; border-top: 1px solid var(--border);
+  animation: up .8s .34s var(--ease) both;
+}
+.hnum-item {
+  flex: 1; max-width: 180px; padding: 28px 20px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+  transition: background .25s;
+}
+.hnum-item:last-child { border-right: none; }
+.hnum-item:hover { background: var(--surface); }
+.hnum-n { font-family: var(--serif); font-style: italic; font-size: 44px; font-weight: 300; letter-spacing: -2px; color: var(--accent); line-height: 1; }
+.hnum-l { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink3); margin-top: 6px; }
+
+/* ── TICKER ── */
+.ticker-wrap { overflow: hidden; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); background: var(--surface); }
+.ticker-track { display: flex; animation: scroll 25s linear infinite; white-space: nowrap; }
+.ticker-track:hover { animation-play-state: paused; }
+.tick-item {
+  display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+  padding: 12px 36px; border-right: 1px solid var(--border);
+  font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3);
+}
+.tick-item em { font-style: normal; color: var(--accent); }
+.tick-sep { width: 4px; height: 4px; border-radius: 50%; background: var(--accent); opacity: .4; }
+@keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+
+/* ── SECTION ── */
+.sec { max-width: 1100px; margin: 0 auto; padding: 96px 48px; }
+.sec-label {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
+  font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--accent);
+}
+.sec-label::before { content: ''; width: 20px; height: 1px; background: var(--accent); }
+h2.sh {
+  font-family: var(--serif); font-weight: 300; font-style: italic;
+  font-size: clamp(40px, 6vw, 68px);
+  letter-spacing: -2px; line-height: .92; margin-bottom: 16px;
+}
+h2.sh strong { font-style: normal; font-weight: 600; }
+.sec-sub { font-size: 14px; color: var(--ink2); max-width: 440px; line-height: 1.8; margin-bottom: 56px; }
+.div { border-top: 1px solid var(--border); max-width: 1100px; margin: 0 auto; }
+
+/* ── HOW CARDS — interactive ── */
+.how-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 1px; background: var(--border); border-radius: 16px; overflow: hidden; }
+.how-card {
+  background: var(--surface); padding: 36px 28px;
+  position: relative; overflow: hidden; cursor: default;
+  transition: background .3s;
+}
+.how-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: var(--accent); transform: scaleX(0); transform-origin: left;
+  transition: transform .4s var(--ease);
+}
+.how-card:hover { background: #161616; }
+.how-card:hover::before { transform: scaleX(1); }
+.how-n { font-size: 10px; letter-spacing: .12em; color: var(--ink3); margin-bottom: 24px; }
+.how-icon {
+  width: 44px; height: 44px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--bg);
+  display: flex; align-items: center; justify-content: center; font-size: 18px;
+  margin-bottom: 20px;
+  transition: border-color .3s, transform .3s var(--ease);
+}
+.how-card:hover .how-icon { border-color: rgba(232,82,26,.4); transform: scale(1.08); }
+.how-card h3 { font-family: var(--serif); font-style: italic; font-size: 21px; font-weight: 400; margin-bottom: 10px; letter-spacing: -.3px; }
+.how-card p { font-size: 13px; color: var(--ink2); line-height: 1.75; }
+
+/* ── SAMPLES — hover reveal ── */
+.samples-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.scard {
+  border: 1px solid var(--border); border-radius: 16px; overflow: hidden;
+  cursor: pointer; position: relative;
+  transition: border-color .3s, transform .4s var(--ease);
+}
+.scard:hover { border-color: rgba(232,82,26,.3); transform: translateY(-8px); }
+.scard-bar { background: #161616; padding: 10px 16px; display: flex; align-items: center; gap: 7px; }
+.scard-dot { width: 9px; height: 9px; border-radius: 50%; }
+.scard-url { flex: 1; text-align: center; font-size: 10px; letter-spacing: .06em; color: var(--ink3); }
+.scard-prev { height: 220px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 28px; text-align: center; position: relative; overflow: hidden; }
+.scard-glow { position: absolute; width: 240px; height: 240px; border-radius: 50%; }
+.scard-tag { font-size: 10px; letter-spacing: .1em; margin-bottom: 8px; position: relative; z-index: 1; }
+.scard-name { font-family: var(--serif); font-size: 32px; font-weight: 300; font-style: italic; letter-spacing: -1px; position: relative; z-index: 1; line-height: 1; margin-bottom: 8px; }
+.scard-desc { font-size: 11px; line-height: 1.6; max-width: 200px; position: relative; z-index: 1; opacity: .45; }
+.scard-cta { margin-top: 14px; padding: 8px 20px; border-radius: 6px; font-size: 11px; font-weight: 700; position: relative; z-index: 1; border: none; cursor: default; font-family: var(--sans); letter-spacing: .06em; text-transform: uppercase; }
+.scard-meta { padding: 14px 16px; border-top: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; background: var(--surface); }
+.scard-from { font-size: 10px; color: var(--ink3); }
+.scard-badge { font-size: 10px; background: rgba(232,82,26,.1); color: var(--accent); padding: 3px 10px; border-radius: 10px; border: 1px solid rgba(232,82,26,.2); }
+
+/* ── ROADMAP ── */
+.rm-list { display: flex; flex-direction: column; }
+.rm-item {
+  display: grid; grid-template-columns: 110px 28px 1fr; gap: 0 24px;
+  align-items: start; padding: 36px 0; border-bottom: 1px solid var(--border);
+  transition: opacity .3s;
+}
+.rm-item:last-child { border-bottom: none; }
+.rm-item:not(.done):not(.now) { opacity: .5; }
+.rm-item:not(.done):not(.now):hover { opacity: .8; }
+.rm-date { font-size: 10px; letter-spacing: .08em; color: var(--ink3); padding-top: 4px; }
+.rm-spine { display: flex; flex-direction: column; align-items: center; padding-top: 4px; }
+.rm-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid var(--border); background: var(--bg); flex-shrink: 0; transition: all .3s; }
+.rm-item.done .rm-dot { background: var(--accent); border-color: var(--accent); box-shadow: 0 0 12px var(--accent-glow); }
+.rm-item.now .rm-dot { background: var(--accent2); border-color: var(--accent2); animation: ripple 2s ease-in-out infinite; }
+@keyframes ripple { 0%,100%{box-shadow:0 0 0 0 rgba(232,82,26,.4)} 50%{box-shadow:0 0 0 8px rgba(232,82,26,0)} }
+.rm-line { flex: 1; width: 1px; background: var(--border); margin-top: 6px; min-height: 36px; }
+.rm-item.done .rm-line { background: linear-gradient(180deg, var(--accent), var(--border)); }
+.rm-phase { font-size: 10px; letter-spacing: .14em; color: var(--accent); margin-bottom: 8px; }
+.rm-content h3 { font-family: var(--serif); font-style: italic; font-size: 22px; font-weight: 300; letter-spacing: -.4px; margin-bottom: 8px; }
+.rm-content p { font-size: 13px; color: var(--ink2); line-height: 1.75; }
+.rm-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; padding: 4px 10px; border-radius: 100px; margin-top: 12px; letter-spacing: .06em; }
+.rb-done { background: rgba(232,82,26,.1); color: var(--accent); border: 1px solid rgba(232,82,26,.2); }
+.rb-now { background: rgba(232,82,26,.08); color: var(--accent2); border: 1px solid rgba(232,82,26,.2); }
+.rb-soon { background: var(--surface); color: var(--ink3); border: 1px solid var(--border); }
+
+/* ── WHITEPAPER ── */
+.wp-grid { display: grid; grid-template-columns: 220px 1fr; gap: 32px; }
+.wp-toc { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 24px; height: fit-content; position: sticky; top: 112px; }
+.wp-toc-title { font-size: 10px; letter-spacing: .16em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
+.wp-toc-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 0; border-bottom: 1px solid var(--border);
+  cursor: pointer; font-size: 12px; color: var(--ink3); font-weight: 500;
+  transition: color .2s;
+}
+.wp-toc-item:last-child { border-bottom: none; }
+.wp-toc-item:hover, .wp-toc-item.on { color: var(--ink); }
+.wp-toc-item.on .wp-toc-num { color: var(--accent); }
+.wp-toc-num { font-size: 10px; color: var(--ink3); width: 20px; flex-shrink: 0; }
+.wp-chapters { display: flex; flex-direction: column; gap: 8px; }
+.wp-ch { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; transition: border-color .2s; }
+.wp-ch:hover { border-color: var(--border-hover); }
+.wp-ch-head { padding: 22px 24px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; transition: background .2s; }
+.wp-ch-head:hover { background: #161616; }
+.wp-ch-num { font-size: 10px; color: var(--accent); letter-spacing: .1em; margin-bottom: 4px; }
+.wp-ch-title { font-family: var(--serif); font-style: italic; font-size: 18px; font-weight: 300; }
+.wp-tog { font-size: 20px; color: var(--ink3); transition: transform .3s var(--ease); flex-shrink: 0; }
+.wp-ch.open .wp-tog { transform: rotate(45deg); }
+.wp-body { padding: 0 24px; max-height: 0; overflow: hidden; transition: max-height .4s var(--ease), padding .3s; }
+.wp-ch.open .wp-body { max-height: 500px; padding: 0 24px 24px; }
+.wp-body p { font-size: 13px; color: var(--ink2); line-height: 1.85; margin-bottom: 12px; }
+.wp-body h4 { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--ink); margin: 18px 0 8px; }
+.wp-body ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.wp-body li { font-size: 12px; color: var(--ink2); padding-left: 18px; position: relative; line-height: 1.6; }
+.wp-body li::before { content: '→'; position: absolute; left: 0; color: var(--accent); font-size: 10px; top: 2px; }
+
+/* ── ABOUT ── */
+.about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start; }
+.about-text h2 { font-family: var(--serif); font-weight: 300; font-style: italic; font-size: clamp(34px,5vw,52px); letter-spacing: -2px; line-height: 1; margin-bottom: 20px; }
+.about-text p { font-size: 13px; color: var(--ink2); line-height: 1.85; margin-bottom: 16px; }
+.manifesto { border-left: 2px solid var(--accent); padding-left: 20px; margin: 28px 0; }
+.manifesto p { font-family: var(--serif); font-style: italic; font-size: 16px; color: var(--ink2); line-height: 1.7; margin-bottom: 10px; }
+.about-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.astat {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px;
+  transition: border-color .25s, transform .3s var(--ease);
+}
+.astat:hover { border-color: rgba(232,82,26,.3); transform: translateY(-4px); }
+.astat-n { font-family: var(--serif); font-style: italic; font-size: 36px; font-weight: 300; letter-spacing: -1.5px; color: var(--accent); line-height: 1; margin-bottom: 4px; }
+.astat-l { font-size: 11px; color: var(--ink3); }
+.principles { margin-top: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.principles-h { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+.principles p { font-size: 13px; color: var(--ink2); line-height: 1.75; }
+
+/* ── PRICING ── */
+.pricing-wrap { max-width: 460px; margin: 0 auto; }
+.prc {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 44px; text-align: center;
+  position: relative; overflow: hidden;
+  transition: transform .3s var(--ease), box-shadow .3s;
+}
+.prc::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+.prc:hover { transform: translateY(-6px); box-shadow: 0 20px 60px rgba(0,0,0,.4); }
+.prc-badge { display: inline-block; background: var(--accent); font-size: 10px; font-weight: 600; letter-spacing: .14em; color: #fff; padding: 5px 16px; border-radius: 100px; margin-bottom: 28px; text-transform: uppercase; }
+.prc-price { font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 84px; letter-spacing: -5px; line-height: 1; color: var(--accent); margin-bottom: 6px; }
+.prc-price sup { font-size: 36px; vertical-align: top; margin-top: 14px; display: inline-block; letter-spacing: 0; }
+.prc-note { font-size: 11px; color: var(--ink3); margin-bottom: 36px; }
+.prc-features { list-style: none; display: flex; flex-direction: column; gap: 12px; text-align: left; margin-bottom: 36px; }
+.prc-features li { display: flex; align-items: center; gap: 12px; font-size: 13px; color: var(--ink2); }
+.prc-check { width: 20px; height: 20px; border-radius: 50%; border: 1px solid rgba(232,82,26,.3); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--accent); flex-shrink: 0; }
+.prc-btn {
+  width: 100%; padding: 17px; background: var(--accent); color: #fff;
+  border: none; border-radius: 10px; font-family: var(--sans); font-size: 14px; font-weight: 700;
+  cursor: pointer; letter-spacing: .06em; text-transform: uppercase;
+  transition: background .2s, transform .25s var(--ease), box-shadow .2s;
+}
+.prc-btn:hover { background: var(--accent2); transform: translateY(-2px); box-shadow: 0 10px 32px var(--accent-glow); }
+
+/* ── FAQ ── */
+.faq { display: flex; flex-direction: column; gap: 8px; max-width: 700px; }
+.faq-item { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color .2s; }
+.faq-item:hover { border-color: var(--border-hover); }
+.faq-item.open { border-color: rgba(232,82,26,.2); }
+.faq-q {
+  padding: 20px 22px; display: flex; align-items: center; justify-content: space-between;
+  cursor: pointer; font-size: 14px; font-weight: 500; transition: background .2s;
+}
+.faq-q:hover { background: var(--surface); }
+.faq-icon { font-size: 18px; color: var(--accent); transition: transform .3s var(--ease); flex-shrink: 0; }
+.faq-item.open .faq-icon { transform: rotate(45deg); }
+.faq-a { padding: 0 22px; max-height: 0; overflow: hidden; transition: max-height .4s var(--ease), padding .3s; }
+.faq-item.open .faq-a { max-height: 200px; padding: 0 22px 20px; }
+.faq-a p { font-size: 13px; color: var(--ink2); line-height: 1.8; }
+.faq-a a { color: var(--accent); text-decoration: none; }
+.faq-a a:hover { text-decoration: underline; }
+
+/* ── LEGAL ── */
+.legal-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.legal-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 28px;
+  cursor: pointer; transition: border-color .25s, transform .35s var(--ease);
+}
+.legal-card:hover { border-color: rgba(232,82,26,.3); transform: translateY(-5px); }
+.legal-icon { width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg); display: flex; align-items: center; justify-content: center; font-size: 16px; margin-bottom: 16px; transition: border-color .2s; }
+.legal-card:hover .legal-icon { border-color: rgba(232,82,26,.3); }
+.legal-card h3 { font-family: var(--serif); font-style: italic; font-size: 19px; font-weight: 300; margin-bottom: 8px; }
+.legal-card p { font-size: 12px; color: var(--ink2); line-height: 1.7; }
+
+/* ── TEAM ── */
+.team-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+.tcard {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 28px 20px;
+  text-align: center; position: relative; overflow: hidden;
+  transition: border-color .25s, transform .35s var(--ease);
+}
+.tcard:hover { border-color: rgba(232,82,26,.25); transform: translateY(-5px); }
+.tcard::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transform: scaleX(0); transform-origin: left; transition: transform .4s var(--ease); }
+.tcard:hover::before { transform: scaleX(1); }
+.tav { width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 16px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 24px; background: var(--bg); transition: border-color .2s; }
+.tcard:hover .tav { border-color: rgba(232,82,26,.4); }
+.tname { font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 18px; letter-spacing: -.3px; margin-bottom: 4px; }
+.trole { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px; }
+.tbio { font-size: 11px; color: var(--ink3); line-height: 1.7; margin-bottom: 16px; }
+.tlink { display: inline-flex; align-items: center; gap: 5px; font-size: 10px; color: var(--ink3); text-decoration: none; padding: 5px 12px; border-radius: 100px; border: 1px solid var(--border); background: var(--bg); transition: all .2s; letter-spacing: .05em; }
+.tlink:hover { border-color: rgba(232,82,26,.4); color: var(--accent); }
+.tlink svg { width: 11px; height: 11px; fill: currentColor; }
+.tba { font-size: 10px; color: var(--ink3); padding: 5px 12px; border-radius: 100px; border: 1px solid var(--border); letter-spacing: .06em; }
+
+/* ── FOOTER ── */
+footer { border-top: 1px solid var(--border); padding: 48px 48px; display: grid; grid-template-columns: 1fr auto; gap: 32px; align-items: start; }
+.flogo { font-family: var(--serif); font-size: 22px; font-style: italic; font-weight: 300; color: var(--ink); margin-bottom: 10px; }
+.flogo span { color: var(--accent); }
+.ftag { font-size: 12px; color: var(--ink3); max-width: 280px; line-height: 1.7; margin-bottom: 20px; }
+.flinks-row { display: flex; gap: 28px; flex-wrap: wrap; align-items: center; }
+.flinks-row a { font-size: 11px; color: var(--ink3); text-decoration: none; transition: color .2s; letter-spacing: .04em; text-transform: uppercase; }
+.flinks-row a:hover { color: var(--ink); }
+.waitlist-label { font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+.waitlist-row { display: flex; gap: 8px; }
+.waitlist-input { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--ink); font-size: 12px; padding: 10px 14px; outline: none; flex: 1; min-width: 0; font-family: var(--sans); transition: border-color .2s; }
+.waitlist-input:focus { border-color: rgba(232,82,26,.4); }
+.waitlist-input::placeholder { color: var(--ink3); }
+.waitlist-btn { background: var(--accent); color: #fff; border: none; border-radius: 8px; font-family: var(--sans); font-size: 11px; font-weight: 700; padding: 10px 18px; cursor: pointer; white-space: nowrap; letter-spacing: .06em; transition: background .2s; }
+.waitlist-btn:hover { background: var(--accent2); }
+.fbot { border-top: 1px solid var(--border); padding: 18px 48px; display: flex; justify-content: space-between; align-items: center; font-size: 10px; color: var(--ink3); flex-wrap: wrap; gap: 8px; letter-spacing: .06em; }
+.fbot-status { display: flex; align-items: center; gap: 8px; }
+.fbot-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+
+/* ── LEGAL MODAL ── */
+.overlay { display: none; position: fixed; inset: 0; z-index: 1000; background: rgba(0,0,0,.9); backdrop-filter: blur(16px); align-items: center; justify-content: center; padding: 20px; }
+.overlay.open { display: flex; }
+.modal-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; max-width: 580px; width: 100%; max-height: 80vh; overflow-y: auto; padding: 44px; animation: scaleIn .25s var(--ease); scrollbar-width: thin; scrollbar-color: var(--border) transparent; position: relative; }
+@keyframes scaleIn { from { opacity:0; transform:scale(.96) } to { opacity:1; transform:scale(1) } }
+.modal-close { position: absolute; top: 18px; right: 18px; background: var(--bg); border: 1px solid var(--border); color: var(--ink2); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; transition: all .2s; }
+.modal-close:hover { border-color: var(--border-hover); color: var(--ink); }
+.modal-box h3 { font-family: var(--serif); font-style: italic; font-size: 28px; font-weight: 300; margin-bottom: 20px; }
+.modal-box p { font-size: 13px; color: var(--ink2); line-height: 1.85; margin-bottom: 12px; }
+.modal-box h4 { font-size: 10px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin: 18px 0 6px; }
+
+/* ── FLOW MODAL ── */
+.flow-overlay { display: none; position: fixed; inset: 0; z-index: 800; background: rgba(0,0,0,.95); backdrop-filter: blur(20px); align-items: center; justify-content: center; padding: 20px; overflow-y: auto; }
+.flow-overlay.open { display: flex; }
+.flow-box { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; max-width: 540px; width: 100%; padding: 44px; animation: scaleIn .3s var(--ease); position: relative; margin: auto; }
+.flow-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); border-radius: 20px 20px 0 0; }
+.flow-close { position: absolute; top: 18px; right: 18px; background: var(--bg); border: 1px solid var(--border); color: var(--ink2); width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; transition: all .2s; }
+.flow-close:hover { border-color: var(--border-hover); color: var(--ink); }
+
+/* steps */
+.steps { display: flex; align-items: center; margin-bottom: 36px; }
+.step-item { display: flex; align-items: center; gap: 7px; flex: 1; }
+.step-dot { width: 26px; height: 26px; border-radius: 50%; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--ink3); flex-shrink: 0; transition: all .3s; font-family: monospace; }
+.step-dot.on { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+.step-dot.done { background: var(--accent); border-color: var(--accent); color: #fff; }
+.step-label { font-size: 10px; color: var(--ink3); font-weight: 600; letter-spacing: .08em; text-transform: uppercase; white-space: nowrap; transition: color .3s; }
+.step-label.on { color: var(--accent); }
+.step-label.done { color: var(--ink); }
+.step-line { flex: 1; height: 1px; background: var(--border); margin: 0 8px; transition: background .3s; }
+.step-line.done { background: linear-gradient(90deg, var(--accent), rgba(232,82,26,.3)); }
+
+/* flow panels */
+.panel { display: none; animation: up .3s var(--ease); }
+.panel.on { display: block; }
+.panel-tag { font-size: 10px; letter-spacing: .18em; text-transform: uppercase; color: var(--accent); margin-bottom: 10px; }
+.flow-box h2 { font-family: var(--serif); font-style: italic; font-weight: 300; font-size: clamp(24px,5vw,34px); letter-spacing: -1px; margin-bottom: 8px; }
+.flow-sub { font-size: 13px; color: var(--ink2); line-height: 1.7; margin-bottom: 22px; }
+.type-toggle { display: flex; gap: 8px; margin-bottom: 16px; }
+.type-btn { flex: 1; padding: 11px 8px; border-radius: 8px; border: 1px solid var(--border); background: transparent; color: var(--ink3); font-family: var(--sans); font-size: 12px; font-weight: 500; cursor: pointer; transition: all .2s; display: flex; align-items: center; justify-content: center; gap: 7px; letter-spacing: .04em; }
+.type-btn.on { border-color: rgba(232,82,26,.35); color: var(--accent); background: rgba(232,82,26,.06); }
+textarea, .text-input {
+  width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+  color: var(--ink); font-size: 11px; line-height: 1.8;
+  padding: 14px; resize: none; outline: none;
+  transition: border-color .2s, box-shadow .2s; font-family: monospace;
+}
+textarea:focus, .text-input:focus { border-color: rgba(232,82,26,.4); box-shadow: 0 0 0 3px rgba(232,82,26,.06); }
+textarea::placeholder, .text-input::placeholder { color: var(--ink3); }
+.input-row { display: flex; gap: 8px; }
+.input-prefix { font-size: 11px; color: var(--ink3); padding: 13px 12px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; flex-shrink: 0; white-space: nowrap; font-family: monospace; }
+.counter { font-size: 10px; color: var(--ink3); text-align: right; margin-top: 5px; }
+.flow-btn {
+  width: 100%; padding: 15px; background: var(--accent); color: #fff;
+  border: none; border-radius: 10px; font-family: var(--sans); font-size: 14px; font-weight: 700;
+  cursor: pointer; letter-spacing: .06em; text-transform: uppercase; margin-top: 10px;
+  transition: background .2s, transform .25s var(--ease), box-shadow .2s;
+  box-shadow: 0 4px 24px var(--accent-glow);
+}
+.flow-btn:hover { background: var(--accent2); transform: translateY(-1px); box-shadow: 0 8px 36px var(--accent-glow); }
+.flow-btn:disabled { opacity: .2; cursor: not-allowed; transform: none; box-shadow: none; }
+.flow-back { background: none; border: none; color: var(--ink3); font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 6px; margin-bottom: 22px; padding: 0; transition: color .2s; letter-spacing: .04em; }
+.flow-back:hover { color: var(--ink); }
+.testnet-notice { display: flex; align-items: center; gap: 8px; margin-top: 12px; padding: 11px 14px; background: rgba(232,82,26,.06); border: 1px solid rgba(232,82,26,.2); border-radius: 8px; font-size: 10px; color: var(--accent); letter-spacing: .04em; }
+
+/* pay panel */
+.pay-card { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; padding: 22px; margin-bottom: 16px; }
+.pay-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
+.pay-amount { font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 40px; letter-spacing: -2px; line-height: 1; color: var(--accent); }
+.pay-badge { font-size: 10px; background: var(--accent); color: #fff; padding: 4px 11px; border-radius: 100px; letter-spacing: .1em; }
+.pay-note { font-size: 10px; color: var(--ink3); margin-top: 3px; }
+.pay-features { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+.pay-features li { display: flex; align-items: center; gap: 9px; font-size: 12px; color: var(--ink2); }
+.pay-check { color: var(--accent); font-size: 11px; }
+.input-preview { display: flex; align-items: center; gap: 12px; padding: 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 14px; }
+.ipicon { font-size: 22px; width: 42px; height: 42px; background: rgba(232,82,26,.08); border: 1px solid rgba(232,82,26,.15); border-radius: 9px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.iplabel { font-size: 10px; color: var(--accent); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 3px; }
+.iptext { font-size: 12px; color: var(--ink2); }
+.pay-methods { display: flex; gap: 8px; margin-bottom: 16px; }
+.pay-methods-label { font-size: 10px; color: var(--ink3); margin-bottom: 8px; letter-spacing: .1em; text-transform: uppercase; }
+.pmeth { flex: 1; padding: 10px; border: 1px solid var(--border); background: transparent; color: var(--ink3); border-radius: 8px; font-size: 11px; cursor: pointer; transition: all .2s; font-family: monospace; }
+.pmeth.on { border-color: rgba(232,82,26,.35); color: var(--accent); background: rgba(232,82,26,.06); }
+
+/* gen panel */
+.gen-wrap { display: flex; flex-direction: column; align-items: center; padding: 32px 0 24px; }
+.gen-spin { width: 52px; height: 52px; border-radius: 50%; border: 1.5px solid var(--border); border-top-color: var(--accent); animation: spin 1s linear infinite; margin-bottom: 16px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.gen-status { font-size: 12px; color: var(--accent); letter-spacing: .08em; }
+.gen-steps { display: flex; flex-direction: column; gap: 8px; }
+.gen-step { display: flex; align-items: center; gap: 10px; font-size: 12px; color: var(--ink3); padding: 11px 14px; border-radius: 8px; border: 1px solid transparent; transition: all .3s; }
+.gen-step.active { color: var(--accent); border-color: rgba(232,82,26,.2); background: rgba(232,82,26,.05); }
+.gen-step.done { color: var(--ink2); border-color: var(--border); background: var(--bg); }
+.gen-dot { width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+/* result panel */
+.result-preview { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin-bottom: 20px; }
+.result-bar { background: #161616; padding: 10px 16px; display: flex; align-items: center; gap: 7px; }
+.result-dot { width: 9px; height: 9px; border-radius: 50%; }
+.result-url { flex: 1; text-align: center; font-size: 10px; color: var(--ink3); }
+.result-content { height: 170px; background: linear-gradient(135deg, #060610, #0e0e1a); display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 22px; position: relative; overflow: hidden; }
+.result-glow { position: absolute; width: 180px; height: 180px; background: radial-gradient(circle, rgba(232,82,26,.1) 0%, transparent 70%); border-radius: 50%; }
+.result-tag { font-size: 10px; color: rgba(232,82,26,.7); letter-spacing: .1em; position: relative; z-index: 1; margin-bottom: 6px; }
+.result-name { font-family: var(--serif); font-style: italic; font-weight: 300; font-size: 26px; letter-spacing: -1px; position: relative; z-index: 1; margin-bottom: 6px; }
+.result-desc { font-size: 11px; color: rgba(255,255,255,.4); position: relative; z-index: 1; max-width: 180px; }
+.result-cta { margin-top: 12px; padding: 7px 18px; background: var(--accent); color: #fff; border: none; border-radius: 6px; font-size: 10px; font-weight: 700; cursor: pointer; position: relative; z-index: 1; letter-spacing: .06em; text-transform: uppercase; font-family: var(--sans); }
+.result-actions { display: flex; gap: 10px; }
+.btn-outline { flex: 1; padding: 13px; background: transparent; border: 1px solid var(--border); color: var(--ink2); border-radius: 9px; font-family: var(--sans); font-size: 12px; font-weight: 600; cursor: pointer; transition: all .2s; letter-spacing: .04em; text-transform: uppercase; }
+.btn-outline:hover { border-color: var(--border-hover); color: var(--ink); }
+.btn-export { flex: 2; padding: 13px; background: var(--accent); color: #fff; border: none; border-radius: 9px; font-family: var(--sans); font-size: 13px; font-weight: 700; cursor: pointer; transition: background .2s, transform .2s; letter-spacing: .06em; text-transform: uppercase; }
+.btn-export:hover { background: var(--accent2); transform: translateY(-1px); }
+
+/* ── TOAST ── */
+#toast { position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(12px); z-index: 9995; background: var(--surface); border: 1px solid var(--border-hover); color: var(--ink); font-size: 12px; padding: 11px 22px; border-radius: 100px; box-shadow: 0 8px 32px rgba(0,0,0,.5); opacity: 0; transition: opacity .3s, transform .3s var(--ease); pointer-events: none; white-space: nowrap; }
+#toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── REVEAL ── */
+.reveal { opacity: 0; transform: translateY(20px); transition: opacity .7s var(--ease), transform .7s var(--ease); }
+.reveal.in { opacity: 1; transform: translateY(0); }
+
+/* ── ANIMATIONS ── */
+@keyframes up { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  nav { padding: 0 24px; }
+  .nav-links { display: none; }
+  .ham { display: flex; }
+  #hero { padding: 130px 24px 70px; }
+  .sec { padding: 72px 24px; }
+  .how-grid { grid-template-columns: 1fr 1fr; }
+  .samples-grid, .about-grid, .wp-grid, .legal-grid, .team-grid { grid-template-columns: 1fr 1fr; }
+  .hnums { flex-wrap: wrap; }
+  .hnum-item { border-right: none; border-bottom: 1px solid var(--border); max-width: 50%; }
+  footer { grid-template-columns: 1fr; padding: 36px 24px; }
+  .fbot { padding: 16px 24px; }
+  .flow-box { padding: 32px 22px; }
+}
+@media (max-width: 600px) {
+  .how-grid, .team-grid, .samples-grid, .legal-grid { grid-template-columns: 1fr; }
+  .about-grid { grid-template-columns: 1fr; gap: 40px; }
+  .wp-grid { grid-template-columns: 1fr; }
+  .wp-toc { display: none; }
+  .hnums { flex-direction: column; }
+  .hnum-item { max-width: 100%; }
+  .about-stats { grid-template-columns: 1fr 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div id="cur"></div>
+<div id="toast"></div>
+
+<!-- TESTNET BANNER -->
+<div id="tbar">
+  <div class="pulse"></div>
+  <span>Base Sepolia Testnet · Chain ID 84532 · No real payments · AI generation simulated</span>
+  <button onclick="closeBar()" aria-label="Dismiss">✕</button>
+</div>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="logo">Deploy<span>Page</span></div>
+  <ul class="nav-links">
+    <li><a href="#how">How</a></li>
+    <li><a href="#samples">Samples</a></li>
+    <li><a href="#roadmap">Roadmap</a></li>
+    <li><a href="#whitepaper">Whitepaper</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+  </ul>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <button class="nav-cta" onclick="openFlow()">Generate Page →</button>
+    <button class="ham" id="ham" onclick="toggleMob()"><span></span><span></span><span></span></button>
+  </div>
+</nav>
+
+<!-- MOBILE MENU -->
+<div class="mob" id="mob">
+  <a href="#how" onclick="toggleMob()">How it works</a>
+  <a href="#samples" onclick="toggleMob()">Samples</a>
+  <a href="#roadmap" onclick="toggleMob()">Roadmap</a>
+  <a href="#whitepaper" onclick="toggleMob()">Whitepaper</a>
+  <a href="#faq" onclick="toggleMob()">FAQ</a>
+  <a href="#pricing" onclick="toggleMob()">Pricing</a>
+  <button class="mob-cta" onclick="toggleMob();openFlow()">Generate Page →</button>
+</div>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-inner">
+    <div class="badge"><div class="badge-dot"></div>AI-powered · $4.99 · Export-ready</div>
+    <h1>Your contract,<br><strong>deployed.</strong></h1>
+    <p class="sub">Paste any smart contract or X profile. AI generates a premium landing page in 60 seconds.</p>
+    <div class="hbtns">
+      <button class="btn-primary" onclick="openFlow()">Generate Your Page →</button>
+      <button class="btn-ghost" onclick="smoothTo('samples')">View Samples</button>
+    </div>
+    <div class="hnums">
+      <div class="hnum-item"><div class="hnum-n">60s</div><div class="hnum-l">Generation time</div></div>
+      <div class="hnum-item"><div class="hnum-n">$4.99</div><div class="hnum-l">One-time price</div></div>
+      <div class="hnum-item"><div class="hnum-n">0</div><div class="hnum-l">Data retained</div></div>
+      <div class="hnum-item"><div class="hnum-n">∞</div><div class="hnum-l">Export use</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker-track">
+    <div class="tick-item"><div class="tick-sep"></div>Smart Contract <em>→ Landing Page</em></div>
+    <div class="tick-item"><div class="tick-sep"></div>X Profile <em>→ Personal Site</em></div>
+    <div class="tick-item"><div class="tick-sep"></div>ERC-20 <em>→ Token Page</em></div>
+    <div class="tick-item"><div class="tick-sep"></div>NFT Contract <em>→ Mint Page</em></div>
+    <div class="tick-item"><div class="tick-sep"></div>DAO <em>→ Governance Page</em></div>
+    <div class="tick-item"><div class="tick-sep"></div>DeFi Protocol <em>→ Launch Page</em></div>
+    <div class="tick-item"><div class="tick-sep"></div>60 Seconds <em>→ Live HTML</em></div>
+    <div class="tick-item"><div class="tick-sep"></div>No Design Skills <em>→ Required</em></div>
+    <div class="tick-item"><div class="tick-sep"></div>Smart Contract <em>→ Landing Page</em></div>
+    <div class="tick-item"><div class="tick-sep"></div>X Profile <em>→ Personal Site</em></div>
+    <div class="tick-item"><div class="tick-sep"></div>ERC-20 <em>→ Token Page</em></div>
+    <div class="tick-item"><div class="tick-sep"></div>NFT Contract <em>→ Mint Page</em></div>
+    <div class="tick-item"><div class="tick-sep"></div>DAO <em>→ Governance Page</em></div>
+    <div class="tick-item"><div class="tick-sep"></div>DeFi Protocol <em>→ Launch Page</em></div>
+    <div class="tick-item"><div class="tick-sep"></div>60 Seconds <em>→ Live HTML</em></div>
+    <div class="tick-item"><div class="tick-sep"></div>No Design Skills <em>→ Required</em></div>
+  </div>
+</div>
+
+<!-- HOW IT WORKS -->
+<section class="sec" id="how">
+  <div class="reveal">
+    <div class="sec-label"><span>01 — How It Works</span></div>
+    <h2 class="sh">Four steps.<br><strong>One result.</strong></h2>
+    <p class="sec-sub">No design skills needed. No configuration. Just paste and generate.</p>
+  </div>
+  <div class="how-grid reveal">
+    <div class="how-card"><div class="how-n">01 / 04</div><div class="how-icon">📋</div><h3>Paste Input</h3><p>Smart contract code, a contract address, or your X profile URL. That's all we need.</p></div>
+    <div class="how-card"><div class="how-n">02 / 04</div><div class="how-icon">💳</div><h3>One-time Pay</h3><p>$4.99, once. Card, crypto, or SOL. Includes one free regeneration within 24 hours.</p></div>
+    <div class="how-card"><div class="how-n">03 / 04</div><div class="how-icon">⚡</div><h3>AI Generates</h3><p>Our pipeline parses your input, selects design direction, writes copy, and renders full HTML in ~60 seconds.</p></div>
+    <div class="how-card"><div class="how-n">04 / 04</div><div class="how-icon">📦</div><h3>Export & Deploy</h3><p>Download the complete HTML file. Host anywhere — Vercel, IPFS, Netlify, or your own server.</p></div>
+  </div>
+</section>
+
+<hr class="div">
+
+<!-- SAMPLES -->
+<section class="sec" id="samples">
+  <div class="reveal">
+    <div class="sec-label"><span>02 — Sample Output</span></div>
+    <h2 class="sh">What it<br><strong>generates.</strong></h2>
+    <p class="sec-sub">Every page is unique, crafted from your project's actual data and identity.</p>
+  </div>
+  <div class="samples-grid reveal">
+    <div class="scard">
+      <div class="scard-bar"><div class="scard-dot" style="background:#ff5f57"></div><div class="scard-dot" style="background:#febc2e"></div><div class="scard-dot" style="background:#28c840"></div><div class="scard-url">deploypage.xyz/p/0x4f2c…</div></div>
+      <div class="scard-prev" style="background:linear-gradient(135deg,#06050e,#120a1e)">
+        <div class="scard-glow" style="background:radial-gradient(circle,rgba(108,40,220,.35) 0%,transparent 70%);top:-40px;left:-20px"></div>
+        <div class="scard-tag" style="color:rgba(180,100,255,.9)">$NOVA · ERC-20 · ETH</div>
+        <div class="scard-name" style="color:#f0e8ff">Nova Protocol</div>
+        <div class="scard-desc" style="color:rgba(255,255,255,.45)">Decentralized liquidity layer for the next generation of DeFi.</div>
+        <button class="scard-cta" style="background:linear-gradient(90deg,#7c20f0,#c050ff);color:#fff">Launch App →</button>
+      </div>
+      <div class="scard-meta"><div class="scard-from">From: Solidity contract</div><div class="scard-badge">ERC-20</div></div>
+    </div>
+    <div class="scard">
+      <div class="scard-bar"><div class="scard-dot" style="background:#ff5f57"></div><div class="scard-dot" style="background:#febc2e"></div><div class="scard-dot" style="background:#28c840"></div><div class="scard-url">deploypage.xyz/p/0x8e1b…</div></div>
+      <div class="scard-prev" style="background:linear-gradient(135deg,#050e0a,#0a1e14)">
+        <div class="scard-glow" style="background:radial-gradient(circle,rgba(0,200,120,.25) 0%,transparent 70%)"></div>
+        <div class="scard-tag" style="color:rgba(0,220,140,.85)">VERDANT DAO · Governance</div>
+        <div class="scard-name" style="color:#e8fff5">Verdant DAO</div>
+        <div class="scard-desc" style="color:rgba(255,255,255,.4)">Community-governed green infrastructure for ReFi ecosystems.</div>
+        <button class="scard-cta" style="background:linear-gradient(90deg,#00c878,#00e8a0);color:#000">Join DAO →</button>
+      </div>
+      <div class="scard-meta"><div class="scard-from">From: Contract address</div><div class="scard-badge">DAO</div></div>
+    </div>
+    <div class="scard">
+      <div class="scard-bar"><div class="scard-dot" style="background:#ff5f57"></div><div class="scard-dot" style="background:#febc2e"></div><div class="scard-dot" style="background:#28c840"></div><div class="scard-url">deploypage.xyz/p/0xc9a8…</div></div>
+      <div class="scard-prev" style="background:linear-gradient(135deg,#0d0608,#1e0812)">
+        <div class="scard-glow" style="background:radial-gradient(circle,rgba(220,40,100,.2) 0%,transparent 70%)"></div>
+        <div class="scard-tag" style="color:rgba(255,80,140,.8)">ÆTHER · NFT · ERC-721</div>
+        <div class="scard-name" style="color:#ffe8f4">Æther Collective</div>
+        <div class="scard-desc" style="color:rgba(255,255,255,.4)">2,048 generative art pieces. Each one a unique fragment of the void.</div>
+        <button class="scard-cta" style="background:linear-gradient(90deg,#e0206e,#ff50a0);color:#fff">Mint Now →</button>
+      </div>
+      <div class="scard-meta"><div class="scard-from">From: Contract address</div><div class="scard-badge">NFT</div></div>
+    </div>
+    <div class="scard">
+      <div class="scard-bar"><div class="scard-dot" style="background:#ff5f57"></div><div class="scard-dot" style="background:#febc2e"></div><div class="scard-dot" style="background:#28c840"></div><div class="scard-url">deploypage.xyz/p/@saramalik</div></div>
+      <div class="scard-prev" style="background:linear-gradient(135deg,#060808,#0a1414)">
+        <div class="scard-glow" style="background:radial-gradient(circle,rgba(232,82,26,.2) 0%,transparent 70%)"></div>
+        <div class="scard-tag" style="color:rgba(232,82,26,.85)">@saramalik · DeFi Analyst</div>
+        <div class="scard-name" style="color:#fff5f0">Sara Malik</div>
+        <div class="scard-desc" style="color:rgba(255,255,255,.4)">On-chain analyst. 50k followers. Weekly alpha threads on DeFi.</div>
+        <button class="scard-cta" style="background:var(--accent);color:#fff">Read Research →</button>
+      </div>
+      <div class="scard-meta"><div class="scard-from">From: X profile URL</div><div class="scard-badge">Influencer</div></div>
+    </div>
+  </div>
+</section>
+
+<hr class="div">
+
+<!-- ROADMAP -->
+<section class="sec" id="roadmap">
+  <div class="reveal">
+    <div class="sec-label"><span>03 — Timeline</span></div>
+    <h2 class="sh">Roadmap.</h2>
+    <p class="sec-sub">Building in public. Here's exactly where we are and where we're going.</p>
+  </div>
+  <div class="rm-list">
+    <div class="rm-item done reveal"><div class="rm-date">Apr 2026</div><div class="rm-spine"><div class="rm-dot"></div><div class="rm-line"></div></div><div class="rm-content"><div class="rm-phase">Phase 01 — Genesis</div><h3>Launch DeployPage MVP</h3><p>Core flow live: paste contract or X URL → pay $4.99 → AI generates landing page → export HTML.</p><div class="rm-badge rb-done">✓ Live</div></div></div>
+    <div class="rm-item now reveal"><div class="rm-date">May 2026</div><div class="rm-spine"><div class="rm-dot"></div><div class="rm-line"></div></div><div class="rm-content"><div class="rm-phase">Phase 02 — Style</div><h3>Multi-style Templates</h3><p>3 distinct style directions per generate. Dark/light/custom palettes. Minimal, bold, or editorial.</p><div class="rm-badge rb-now">● In Progress</div></div></div>
+    <div class="rm-item reveal"><div class="rm-date">Jun 2026</div><div class="rm-spine"><div class="rm-dot"></div><div class="rm-line"></div></div><div class="rm-content"><div class="rm-phase">Phase 03 — Live</div><h3>One-click Hosting</h3><p>Deploy directly to deploypage.xyz/p/yourslug. Custom subdomain. IPFS publishing for Web3 projects.</p><div class="rm-badge rb-soon">— Q2 2026</div></div></div>
+    <div class="rm-item reveal"><div class="rm-date">Jul 2026</div><div class="rm-spine"><div class="rm-dot"></div><div class="rm-line"></div></div><div class="rm-content"><div class="rm-phase">Phase 04 — Edit</div><h3>Visual Editor</h3><p>Click-to-edit any section of the generated page. Change copy, colors, layout order. No code required.</p><div class="rm-badge rb-soon">— Q3 2026</div></div></div>
+    <div class="rm-item reveal"><div class="rm-date">Sep 2026</div><div class="rm-spine"><div class="rm-dot"></div><div class="rm-line"></div></div><div class="rm-content"><div class="rm-phase">Phase 05 — Connect</div><h3>Wallet & Analytics Integration</h3><p>Embed WalletConnect, live token price, holder count. Track visits on-chain.</p><div class="rm-badge rb-soon">— Q3 2026</div></div></div>
+    <div class="rm-item reveal"><div class="rm-date">2027</div><div class="rm-spine"><div class="rm-dot"></div></div><div class="rm-content"><div class="rm-phase">Phase 06 — Ecosystem</div><h3>API Access & White-label</h3><p>Developer API for bulk generation. White-label for launchpads and DEX platforms.</p><div class="rm-badge rb-soon">— 2027</div></div></div>
+  </div>
+</section>
+
+<hr class="div">
+
+<!-- WHITEPAPER -->
+<section class="sec" id="whitepaper">
+  <div class="reveal">
+    <div class="sec-label"><span>04 — Documentation</span></div>
+    <h2 class="sh">Whitepaper.</h2>
+    <p class="sec-sub">How DeployPage works under the hood. Technical overview of our AI pipeline.</p>
+  </div>
+  <div class="wp-grid reveal">
+    <div class="wp-toc">
+      <div class="wp-toc-title">Contents</div>
+      <div class="wp-toc-item on" onclick="wpOpen(0)"><span class="wp-toc-num">01</span>The Problem</div>
+      <div class="wp-toc-item" onclick="wpOpen(1)"><span class="wp-toc-num">02</span>AI Pipeline</div>
+      <div class="wp-toc-item" onclick="wpOpen(2)"><span class="wp-toc-num">03</span>Input Types</div>
+      <div class="wp-toc-item" onclick="wpOpen(3)"><span class="wp-toc-num">04</span>Design System</div>
+      <div class="wp-toc-item" onclick="wpOpen(4)"><span class="wp-toc-num">05</span>Business Model</div>
+    </div>
+    <div class="wp-chapters">
+      <div class="wp-ch open" id="wpc0"><div class="wp-ch-head" onclick="wpToggle(0)"><div><div class="wp-ch-num">Chapter 01</div><div class="wp-ch-title">The Problem</div></div><div class="wp-tog">+</div></div><div class="wp-body"><p>Every day, hundreds of new tokens launch without a professional web presence. Setting up a landing page requires design skills, developer time, or expensive no-code tools with steep learning curves.</p><p>For crypto projects, a landing page is often the first trust signal for investors. A bad one kills credibility instantly.</p><h4>The Gap</h4><ul><li>No tool reads a smart contract and generates a project page</li><li>Existing tools require manual input of all content</li><li>Web3-native aesthetics poorly supported by generic builders</li><li>Most builders ship contracts before they ship websites</li></ul></div></div>
+      <div class="wp-ch" id="wpc1"><div class="wp-ch-head" onclick="wpToggle(1)"><div><div class="wp-ch-num">Chapter 02</div><div class="wp-ch-title">AI Pipeline</div></div><div class="wp-tog">+</div></div><div class="wp-body"><p>DeployPage's generation pipeline runs in five sequential stages, each producing structured outputs that feed the next.</p><h4>Stage 1 — Parse</h4><ul><li>Smart contracts: extract token name, symbol, supply, functions, events</li><li>X profiles: extract bio, pinned content, follower signals, niche keywords</li></ul><h4>Stage 2–3 — Classify & Design</h4><ul><li>Project type detection: DeFi / NFT / DAO / Personal / Influencer</li><li>Color palette, typography pairing, layout direction selected by AI</li></ul><h4>Stage 4–5 — Copy & Render</h4><ul><li>Generate hero headline, subheadline, feature bullets, CTA copy</li><li>Render full responsive HTML with embedded CSS and JS</li></ul></div></div>
+      <div class="wp-ch" id="wpc2"><div class="wp-ch-head" onclick="wpToggle(2)"><div><div class="wp-ch-num">Chapter 03</div><div class="wp-ch-title">Input Types</div></div><div class="wp-tog">+</div></div><div class="wp-body"><h4>Smart Contract Input</h4><ul><li>Full Solidity source code (any ERC standard)</li><li>Contract address (Ethereum, Base, Polygon — Solana coming soon)</li><li>ABI JSON paste</li></ul><h4>X / Twitter Profile Input</h4><ul><li>Public profile URL (x.com/username)</li><li>Bio analyzed for keywords, niche, and tone</li><li>Pinned tweet content used for hero copy generation</li></ul><p>All inputs are processed ephemerally — we do not store your code or personal data after generation.</p></div></div>
+      <div class="wp-ch" id="wpc3"><div class="wp-ch-head" onclick="wpToggle(3)"><div><div class="wp-ch-num">Chapter 04</div><div class="wp-ch-title">Design System</div></div><div class="wp-tog">+</div></div><div class="wp-body"><h4>Color Palettes</h4><ul><li>8 dark-mode palettes optimized for crypto and Web3</li><li>4 light palettes for personal brands and editorial</li><li>12 accent color options from neon to muted</li></ul><h4>Typography</h4><ul><li>14 curated font pairings — never Inter, never Arial</li><li>Display + body selected by project tone</li><li>All fonts embedded in generated output</li></ul></div></div>
+      <div class="wp-ch" id="wpc4"><div class="wp-ch-head" onclick="wpToggle(4)"><div><div class="wp-ch-num">Chapter 05</div><div class="wp-ch-title">Business Model</div></div><div class="wp-tog">+</div></div><div class="wp-body"><p>Simple pay-per-generate model. No subscriptions. No freemium traps.</p><h4>Current Pricing</h4><ul><li>$4.99 per generation (launch price)</li><li>Includes 1 free regeneration within 24 hours</li><li>Full HTML export included</li></ul><h4>Future Plans</h4><ul><li>Agency bundle: 10 generations for $39</li><li>API access: $0.50/generation at scale</li><li>White-label: custom pricing for platforms</li></ul></div></div>
+    </div>
+  </div>
+</section>
+
+<hr class="div">
+
+<!-- ABOUT -->
+<section class="sec" id="about">
+  <div class="sec-label reveal"><span>05 — About</span></div>
+  <div class="about-grid">
+    <div class="about-text reveal">
+      <h2>Built for builders<br>who move fast.</h2>
+      <p>DeployPage was born from a simple frustration: brilliant projects launching with no web presence, losing credibility before the first transaction.</p>
+      <p>We believe if you've written the contract, you've already written the brief.</p>
+      <div class="manifesto">
+        <p>"A landing page is the first handshake between a project and its community. It should be instant, it should be good, and it should not require a designer."</p>
+      </div>
+      <div style="font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3)">Est. April 2026 — Built in Public</div>
+    </div>
+    <div class="reveal">
+      <div class="about-stats">
+        <div class="astat"><div class="astat-n">60s</div><div class="astat-l">Average generation time</div></div>
+        <div class="astat"><div class="astat-n">2</div><div class="astat-l">Input types supported</div></div>
+        <div class="astat"><div class="astat-n">$4.99</div><div class="astat-l">One-time price, always</div></div>
+        <div class="astat"><div class="astat-n">0</div><div class="astat-l">Data stored after generation</div></div>
+      </div>
+      <div class="principles"><div class="principles-h">Our Principles</div><p>Fast over perfect. Public over private. Simple pricing. No dark patterns. No subscriptions. Your data is yours.</p></div>
+    </div>
+  </div>
+</section>
+
+<hr class="div">
+
+<!-- PRICING -->
+<section class="sec" id="pricing" style="text-align:center">
+  <div class="reveal">
+    <div class="sec-label" style="justify-content:center"><span>06 — Pricing</span></div>
+    <h2 class="sh">Simple price.<br><strong>No surprises.</strong></h2>
+    <p class="sec-sub" style="margin:0 auto 52px">One page, one price. Pay once, export forever.</p>
+  </div>
+  <div class="pricing-wrap reveal">
+    <div class="prc">
+      <div class="prc-badge">Launch Price</div>
+      <div class="prc-price"><sup>$</sup>4<span style="font-size:48px;letter-spacing:-2px">.99</span></div>
+      <div class="prc-note">per generation · one-time · no subscription</div>
+      <ul class="prc-features">
+        <li><div class="prc-check">✓</div>AI-generated premium landing page</li>
+        <li><div class="prc-check">✓</div>Smart contract OR X profile input</li>
+        <li><div class="prc-check">✓</div>Mobile-responsive design</li>
+        <li><div class="prc-check">✓</div>Full HTML source export</li>
+        <li><div class="prc-check">✓</div>1 free regeneration within 24hrs</li>
+        <li><div class="prc-check">✓</div>Zero data retention after generation</li>
+      </ul>
+      <button class="prc-btn" onclick="openFlow()">Generate Your Page →</button>
+    </div>
+  </div>
+</section>
+
+<hr class="div">
+
+<!-- FAQ -->
+<section class="sec" id="faq">
+  <div class="reveal">
+    <div class="sec-label"><span>07 — FAQ</span></div>
+    <h2 class="sh">Common<br><strong>questions.</strong></h2>
+    <p class="sec-sub">Everything you need to know before generating your first page.</p>
+  </div>
+  <div class="faq reveal">
+    <div class="faq-item open"><div class="faq-q" onclick="faqToggle(this)"><span>Is this really $4.99 with no hidden fees?</span><span class="faq-icon">+</span></div><div class="faq-a"><p>Yes. $4.99 per generation, once. No account required, no subscription, no upsell. You get the full HTML file. That's it. The launch price may go up as we add features, but early users are grandfathered in.</p></div></div>
+    <div class="faq-item"><div class="faq-q" onclick="faqToggle(this)"><span>Can I use it for any blockchain or only Ethereum?</span><span class="faq-icon">+</span></div><div class="faq-a"><p>Any EVM-compatible chain: Ethereum, Base, Polygon, Arbitrum, Optimism. Solana support is on the roadmap for Q2 2026. You can also paste a raw Solidity file — no chain required.</p></div></div>
+    <div class="faq-item"><div class="faq-q" onclick="faqToggle(this)"><span>Do you store my contract code?</span><span class="faq-icon">+</span></div><div class="faq-a"><p>No. Your input is processed ephemerally and deleted after your page is generated and delivered. Zero retention policy.</p></div></div>
+    <div class="faq-item"><div class="faq-q" onclick="faqToggle(this)"><span>What if the generated page doesn't look right?</span><span class="faq-icon">+</span></div><div class="faq-a"><p>Every purchase includes 1 free regeneration within 24 hours. If it fails due to a system error, you get a full refund or another free attempt. Email <a href="mailto:refunds@deploypage.xyz">refunds@deploypage.xyz</a> with your order ID.</p></div></div>
+    <div class="faq-item"><div class="faq-q" onclick="faqToggle(this)"><span>Where can I host the exported HTML?</span><span class="faq-icon">+</span></div><div class="faq-a"><p>Anywhere that serves static files: Vercel, Netlify, GitHub Pages, IPFS, Cloudflare Pages, or your own VPS. The output is a single self-contained HTML file — no dependencies, no build step.</p></div></div>
+    <div class="faq-item"><div class="faq-q" onclick="faqToggle(this)"><span>Do I own the generated page?</span><span class="faq-icon">+</span></div><div class="faq-a"><p>100%. The HTML, CSS, and JS generated for you is yours for any lawful purpose. No attribution required. We retain no license to your page after export.</p></div></div>
+  </div>
+</section>
+
+<hr class="div">
+
+<!-- LEGAL -->
+<section class="sec" id="legal">
+  <div class="reveal">
+    <div class="sec-label"><span>08 — Legal</span></div>
+    <h2 class="sh">Legal.</h2>
+    <p class="sec-sub">Simple and transparent. Click any card to read the full document.</p>
+  </div>
+  <div class="legal-grid reveal">
+    <div class="legal-card" onclick="openLegal('tos')"><div class="legal-icon">📄</div><h3>Terms of Service</h3><p>What you can and can't do with DeployPage. How payment, refunds, and ownership works.</p></div>
+    <div class="legal-card" onclick="openLegal('privacy')"><div class="legal-icon">🔒</div><h3>Privacy Policy</h3><p>We process your input ephemerally. No input data stored post-generation. No data selling. Ever.</p></div>
+    <div class="legal-card" onclick="openLegal('refund')"><div class="legal-icon">↩️</div><h3>Refund Policy</h3><p>If your page fails to generate due to a system error, you get a full refund or free regeneration.</p></div>
+    <div class="legal-card" onclick="openLegal('ip')"><div class="legal-icon">©️</div><h3>IP & Ownership</h3><p>You own the generated HTML output 100%. We retain no license to your page after export.</p></div>
+  </div>
+</section>
+
+<hr class="div">
+
+<!-- TEAM -->
+<section class="sec" id="team">
+  <div class="reveal">
+    <div class="sec-label"><span>09 — Team</span></div>
+    <h2 class="sh">The builders<br><strong>behind it.</strong></h2>
+    <p class="sec-sub">Small team. Moving fast. Building in public.</p>
+  </div>
+  <div class="team-grid reveal">
+    <div class="tcard">
+      <div class="tav">🏛️</div>
+      <div class="tname">arthousebase</div>
+      <div class="trole">Founder & Visionary</div>
+      <div class="tbio">Designer-turned-builder. Obsessed with the intersection of craft and crypto.</div>
+      <a class="tlink" href="https://x.com/arthousebase" target="_blank" rel="noopener"><svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.259 5.63 5.905-5.63zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>@arthousebase</a>
+    </div>
+    <div class="tcard"><div class="tav" style="font-size:20px">⚡</div><div class="tname">Lead Engineer</div><div class="trole">Engineering</div><div class="tbio">Looking for a senior Solidity + TypeScript engineer who loves shipping fast.</div><span class="tba">Hiring · TBA</span></div>
+    <div class="tcard"><div class="tav" style="font-size:20px">🎨</div><div class="tname">Design Lead</div><div class="trole">Design & Motion</div><div class="tbio">Looking for someone who crafts interfaces that feel like premium editorial.</div><span class="tba">Hiring · TBA</span></div>
+    <div class="tcard"><div class="tav" style="font-size:20px">🔗</div><div class="tname">AI Engineer</div><div class="trole">AI & Infrastructure</div><div class="tbio">Building the pipeline that turns raw contracts into polished pages in 60 seconds.</div><span class="tba">Hiring · TBA</span></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div>
+    <div class="flogo">Deploy<span>Page</span></div>
+    <div class="ftag">Turn any smart contract or X profile into a premium landing page. AI-powered. One-time payment.</div>
+    <div style="margin-top:20px">
+      <div class="waitlist-label">Get notified at launch</div>
+      <div class="waitlist-row">
+        <input class="waitlist-input" type="email" id="wl" placeholder="your@email.com">
+        <button class="waitlist-btn" onclick="joinWL()">Notify me →</button>
+      </div>
+    </div>
+  </div>
+  <div class="flinks-row">
+    <a href="#how">How it Works</a>
+    <a href="#samples">Samples</a>
+    <a href="#roadmap">Roadmap</a>
+    <a href="#whitepaper">Whitepaper</a>
+    <a href="#faq">FAQ</a>
+    <a href="#legal">Legal</a>
+  </div>
+</footer>
+<div class="fbot">
+  <span>© 2026 DeployPage. All rights reserved.</span>
+  <div class="fbot-status"><div class="fbot-dot"></div><span>Testnet · Est. April 2026</span></div>
+</div>
+
+<!-- FLOW MODAL -->
+<div class="flow-overlay" id="fmod">
+  <div class="flow-box">
+    <button class="flow-close" onclick="closeFlow()">✕</button>
+    <div class="steps">
+      <div class="step-item"><div class="step-dot on" id="d1">1</div><div class="step-label on" id="l1">Input</div></div>
+      <div class="step-line" id="ln1"></div>
+      <div class="step-item"><div class="step-dot" id="d2">2</div><div class="step-label" id="l2">Pay</div></div>
+      <div class="step-line" id="ln2"></div>
+      <div class="step-item"><div class="step-dot" id="d3">3</div><div class="step-label" id="l3">Build</div></div>
+      <div class="step-line" id="ln3"></div>
+      <div class="step-item"><div class="step-dot" id="d4">4</div><div class="step-label" id="l4">Export</div></div>
+    </div>
+    <div class="panel on" id="fp1">
+      <div class="panel-tag">// Step 01</div>
+      <h2>Paste your project.</h2>
+      <p class="flow-sub">Smart contract code, address, or your X profile URL.</p>
+      <div class="type-toggle">
+        <button class="type-btn on" onclick="selType(this,'contract')">📄 Smart Contract</button>
+        <button class="type-btn" onclick="selType(this,'x')">𝕏 X Profile</button>
+      </div>
+      <div id="fc1">
+        <textarea id="ci" rows="6" placeholder="// Paste Solidity code or contract address&#10;&#10;contract MyToken is ERC20 { ... }" oninput="chk()"></textarea>
+        <div class="counter"><span id="cc">0</span> chars</div>
+      </div>
+      <div id="fx1" style="display:none">
+        <div class="input-row">
+          <div class="input-prefix">x.com/</div>
+          <input class="text-input" type="text" id="xi" placeholder="username" oninput="chk()" style="border-radius:10px">
+        </div>
+        <div class="counter" style="margin-top:6px">We'll analyze their public bio &amp; pinned tweet</div>
+      </div>
+      <button class="flow-btn" id="nxtBtn" onclick="goTo(2)" disabled>Continue →</button>
+      <div class="testnet-notice">⚠ Testnet mode — payment is simulated, no real charge</div>
+    </div>
+    <div class="panel" id="fp2">
+      <button class="flow-back" onclick="goTo(1)">← Back</button>
+      <div class="panel-tag">// Step 02</div>
+      <h2>Unlock your page.</h2>
+      <p class="flow-sub">One-time payment. Your landing page, forever.</p>
+      <div class="input-preview"><div class="ipicon" id="pi">📄</div><div><div class="iplabel" id="pl">Smart Contract</div><div class="iptext" id="pt">—</div></div></div>
+      <div class="pay-card">
+        <div class="pay-header">
+          <div><div class="pay-amount">$4<span style="font-size:22px">.99</span></div><div class="pay-note">one-time · instant access</div></div>
+          <div class="pay-badge">Launch Price</div>
+        </div>
+        <ul class="pay-features">
+          <li><span class="pay-check">✓</span>AI-generated landing page</li>
+          <li><span class="pay-check">✓</span>Mobile-responsive design</li>
+          <li><span class="pay-check">✓</span>Full HTML export</li>
+          <li><span class="pay-check">✓</span>1 free regen in 24hrs</li>
+        </ul>
+      </div>
+      <div class="pay-methods-label">Pay With</div>
+      <div class="pay-methods">
+        <button class="pmeth on" onclick="selPay(this)">💳 Card</button>
+        <button class="pmeth" onclick="selPay(this)">◎ Crypto</button>
+        <button class="pmeth" onclick="selPay(this)">⚡ SOL</button>
+      </div>
+      <button class="flow-btn" onclick="goTo(3)">Pay $4.99 & Generate →</button>
+      <button class="flow-back" style="margin-top:10px;margin-bottom:0" onclick="goTo(1)">← Change input</button>
+    </div>
+    <div class="panel" id="fp3">
+      <div class="panel-tag">// Step 03</div>
+      <h2>Building your page.</h2>
+      <p class="flow-sub">AI is analyzing your input and crafting the perfect landing page.</p>
+      <div class="gen-wrap">
+        <div class="gen-spin"></div>
+        <div class="gen-status" id="gst">Initializing…</div>
+      </div>
+      <div class="gen-steps">
+        <div class="gen-step" id="gs1"><div class="gen-dot"></div>Analyzing input data</div>
+        <div class="gen-step" id="gs2"><div class="gen-dot"></div>Extracting project identity</div>
+        <div class="gen-step" id="gs3"><div class="gen-dot"></div>Choosing design direction</div>
+        <div class="gen-step" id="gs4"><div class="gen-dot"></div>Writing copy &amp; sections</div>
+        <div class="gen-step" id="gs5"><div class="gen-dot"></div>Rendering landing page</div>
+      </div>
+    </div>
+    <div class="panel" id="fp4">
+      <div class="panel-tag">// Step 04</div>
+      <h2>Your page is ready.</h2>
+      <p class="flow-sub">Preview below. Export HTML or share your DeployPage link.</p>
+      <div class="result-preview">
+        <div class="result-bar"><div class="result-dot" style="background:#ff5f57"></div><div class="result-dot" style="background:#febc2e"></div><div class="result-dot" style="background:#28c840"></div><div class="result-url">deploypage.xyz/p/0xd3f4a8…</div></div>
+        <div class="result-content">
+          <div class="result-glow"></div>
+          <div class="result-tag">$SAMPLE · ERC-20</div>
+          <div class="result-name">YourToken</div>
+          <div class="result-desc">A next-generation decentralized protocol built for open finance.</div>
+          <button class="result-cta">Launch App →</button>
+        </div>
+      </div>
+      <div class="result-actions">
+        <button class="btn-outline" onclick="resetFlow()">↺ New</button>
+        <button class="btn-export" onclick="showToast('Export available at mainnet launch ✦')">Export HTML →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LEGAL MODAL -->
+<div class="overlay" id="lmod"><div class="modal-box" id="lmbox"></div></div>
+
+<script>
+/* CURSOR */
+const cur = document.getElementById('cur');
+if (window.matchMedia('(pointer:fine)').matches) {
+  document.addEventListener('mousemove', e => {
+    cur.style.left = e.clientX + 'px';
+    cur.style.top = e.clientY + 'px';
+  });
+  document.querySelectorAll('a,button').forEach(el => {
+    el.addEventListener('mouseenter', () => cur.classList.add('grow'));
+    el.addEventListener('mouseleave', () => cur.classList.remove('grow'));
+  });
+}
+
+/* TESTNET BAR */
+function closeBar() {
+  document.getElementById('tbar').style.display = 'none';
+  document.getElementById('nav').classList.add('no-bar');
+}
+
+/* MOBILE MENU */
+function toggleMob() {
+  const m = document.getElementById('mob'), h = document.getElementById('ham');
+  const open = m.classList.toggle('open');
+  h.classList.toggle('open', open);
+  document.body.style.overflow = open ? 'hidden' : '';
+}
+
+/* SMOOTH SCROLL */
+function smoothTo(id) { document.getElementById(id).scrollIntoView({ behavior: 'smooth' }); }
+
+/* REVEAL */
+const obs = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) e.target.classList.add('in'); }), { threshold: .1 });
+document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+
+/* TOAST */
+let tTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(tTimer); tTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+/* WHITEPAPER */
+function wpToggle(i) { document.getElementById('wpc'+i).classList.toggle('open'); }
+function wpOpen(i) {
+  for (let j = 0; j < 5; j++) document.getElementById('wpc'+j).classList.toggle('open', j === i);
+  document.querySelectorAll('.wp-toc-item').forEach((t, j) => t.classList.toggle('on', j === i));
+}
+
+/* FAQ */
+function faqToggle(btn) { btn.closest('.faq-item').classList.toggle('open'); }
+
+/* WAITLIST */
+function joinWL() {
+  const v = document.getElementById('wl').value.trim();
+  if (!v || !v.includes('@')) { showToast('Enter a valid email'); return; }
+  document.getElementById('wl').value = '';
+  showToast('✦ You\'re on the list');
+}
+
+/* FLOW */
+let itype = 'contract';
+function openFlow() { document.getElementById('fmod').classList.add('open'); document.body.style.overflow = 'hidden'; }
+function closeFlow() { document.getElementById('fmod').classList.remove('open'); document.body.style.overflow = ''; }
+function selType(btn, t) {
+  itype = t;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  document.getElementById('fc1').style.display = t === 'contract' ? 'block' : 'none';
+  document.getElementById('fx1').style.display = t === 'x' ? 'block' : 'none';
+  chk();
+}
+function chk() {
+  const cv = document.getElementById('ci').value.trim();
+  const xv = document.getElementById('xi').value.trim();
+  document.getElementById('cc').textContent = cv.length;
+  document.getElementById('nxtBtn').disabled = !(itype === 'contract' ? cv.length > 10 : xv.length > 2);
+}
+function selPay(btn) { document.querySelectorAll('.pmeth').forEach(b => b.classList.remove('on')); btn.classList.add('on'); }
+function updSteps(s) {
+  for (let i = 1; i <= 4; i++) {
+    const d = document.getElementById('d'+i), l = document.getElementById('l'+i);
+    d.className = 'step-dot'; l.className = 'step-label';
+    if (i < s) { d.classList.add('done'); d.textContent = '✓'; l.classList.add('done'); }
+    else if (i === s) { d.classList.add('on'); d.textContent = i; l.classList.add('on'); }
+    else d.textContent = i;
+    if (i <= 3) document.getElementById('ln'+i).className = 'step-line' + (i < s ? ' done' : '');
+  }
+}
+function updPrev() {
+  const isC = itype === 'contract';
+  const cv = document.getElementById('ci').value.trim();
+  const xv = document.getElementById('xi').value.trim();
+  document.getElementById('pi').textContent = isC ? '📄' : '𝕏';
+  document.getElementById('pl').textContent = isC ? 'Smart Contract' : 'X Profile';
+  document.getElementById('pt').textContent = isC ? (cv.length > 55 ? cv.slice(0,55)+'…' : cv) || '—' : 'x.com/'+xv;
+}
+function goTo(s) {
+  if (s === 2) updPrev();
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
+  document.getElementById('fp'+s).classList.add('on');
+  updSteps(s);
+  if (s === 3) runGen();
+  document.querySelector('.flow-box').scrollTop = 0;
+}
+function runGen() {
+  const ids = ['gs1','gs2','gs3','gs4','gs5'];
+  const labs = ['Analyzing input data…','Extracting project identity…','Choosing design direction…','Writing copy & sections…','Rendering landing page…'];
+  let i = 0;
+  ids.forEach(id => { document.getElementById(id).className = 'gen-step'; });
+  function nx() {
+    if (i > 0) document.getElementById(ids[i-1]).className = 'gen-step done';
+    if (i < ids.length) {
+      document.getElementById(ids[i]).className = 'gen-step active';
+      document.getElementById('gst').textContent = labs[i];
+      i++; setTimeout(nx, 900);
+    } else {
+      document.getElementById('gst').textContent = 'Complete ✓';
+      setTimeout(() => goTo(4), 600);
+    }
+  }
+  nx();
+}
+function resetFlow() {
+  document.getElementById('ci').value = '';
+  document.getElementById('xi').value = '';
+  document.getElementById('cc').textContent = '0';
+  document.getElementById('nxtBtn').disabled = true;
+  goTo(1);
+}
+
+/* LEGAL */
+const ldata = {
+  tos: { t: 'Terms of Service', b: `<p>Last updated: April 2026</p><h4>1. Acceptance</h4><p>By using DeployPage, you agree to these Terms.</p><h4>2. What We Provide</h4><p>An AI-powered landing page generation service. The output is a static HTML file.</p><h4>3. Payment</h4><p>Each generation costs $4.99 (launch price). Includes 1 free regeneration within 24 hours.</p><h4>4. Your Input</h4><p>You represent that you have the right to submit the content you provide.</p><h4>5. Generated Output</h4><p>You own the generated HTML output. DeployPage retains no license to your page.</p><h4>6. Limitation of Liability</h4><p>Maximum liability limited to the amount you paid for the service.</p>` },
+  privacy: { t: 'Privacy Policy', b: `<p>Last updated: April 2026</p><h4>1. What We Collect</h4><p>The input you paste. Payment details are processed by our payment provider — we never see card numbers.</p><h4>2. What We Don't Store</h4><p>After your landing page is generated and delivered, your input data is deleted. Zero retention policy.</p><h4>3. Analytics</h4><p>Privacy-preserving analytics only (no cookies, no fingerprinting).</p><h4>4. Third Parties</h4><p>We don't share your data with advertisers or data brokers. Ever.</p>` },
+  refund: { t: 'Refund Policy', b: `<p>Last updated: April 2026</p><h4>When You Get a Full Refund</h4><p>If generation fails due to a system error, you'll receive a full refund or free regeneration — your choice.</p><h4>Free Regeneration</h4><p>Every purchase includes 1 free regeneration within 24 hours.</p><h4>Contact</h4><p>Email refunds@deploypage.xyz with your order ID. We respond within 24 hours.</p>` },
+  ip: { t: 'IP & Ownership', b: `<p>Last updated: April 2026</p><h4>You Own Your Output</h4><p>The HTML, CSS, and JS generated for you is yours — 100%. Use it for any lawful purpose. No attribution required.</p><h4>DeployPage IP</h4><p>The platform, AI pipeline, design system, and brand are owned by DeployPage. The output is yours — the tool is ours.</p>` }
+};
+function openLegal(k) {
+  const d = ldata[k];
+  document.getElementById('lmbox').innerHTML = `<button class="modal-close" onclick="closeLegal()">✕</button><h3>${d.t}</h3>${d.b}`;
+  document.getElementById('lmod').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLegal() { document.getElementById('lmod').classList.remove('open'); document.body.style.overflow = ''; }
+
+/* CLOSE ON BACKDROP / ESC */
+document.getElementById('fmod').addEventListener('click', e => { if (e.target === document.getElementById('fmod')) closeFlow(); });
+document.getElementById('lmod').addEventListener('click', e => { if (e.target === document.getElementById('lmod')) closeLegal(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeFlow(); closeLegal(); } });
+</script>
+</body>
+</html>
+<!-- Base Sepolia Contract Info (injected by DeployPage) -->
+<script>
+(function(){
+  const CONTRACT = window.__DEPLOYPAGE_CONTRACT__ || '';
+  const CHAIN_ID  = 84532;
+  const EXPLORER  = 'https://sepolia.basescan.org';
+
+  // Show contract badge if configured
+  if (CONTRACT) {
+    const bar = document.getElementById('tbar');
+    if (bar) {
+      const link = document.createElement('a');
+      link.href = EXPLORER + '/address/' + CONTRACT;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      link.style.cssText = 'color:#fff;text-decoration:underline;margin-left:10px;font-size:10px;letter-spacing:.06em;';
+      link.textContent = CONTRACT.slice(0,6)+'…'+CONTRACT.slice(-4) + ' ↗';
+      bar.querySelector('span').appendChild(document.createTextNode(' · '));
+      bar.querySelector('span').appendChild(link);
+    }
+  }
+
+  // Expose on window for dapp integration
+  window.DeployPage = {
+    network: 'base-sepolia',
+    chainId: CHAIN_ID,
+    contract: CONTRACT,
+    explorer: EXPLORER,
+    rpc: 'https://sepolia.base.org',
+    faucets: [
+      'https://www.coinbase.com/faucets/base-ethereum-goerli-faucet',
+      'https://faucet.quicknode.com/base/sepolia'
+    ]
+  };
+})();
+</script>
