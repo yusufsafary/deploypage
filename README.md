@@ -2,9 +2,17 @@
 
 **Turn Any Contract Into a Landing Page** — AI-powered landing page generator for smart contracts.
 
-- **Network**: Base Sepolia Testnet (Chain ID: 84532)
-- **Owner address**: `0x715c44484d1c126b75c8989da40489c7b38592fd`
-- **Explorer**: [sepolia.basescan.org](https://sepolia.basescan.org)
+## Live Contract (Base Sepolia Testnet)
+
+| Field | Value |
+|-------|-------|
+| **Network** | Base Sepolia Testnet |
+| **Chain ID** | 84532 |
+| **Contract** | [`0xB720952ae3c1dA89C0C452cDEeE47b99F1A8E69D`](https://sepolia.basescan.org/address/0xB720952ae3c1dA89C0C452cDEeE47b99F1A8E69D) |
+| **Owner** | `0x715C44484d1c126b75c8989dA40489c7B38592FD` |
+| **Deploy Tx** | [`0xedebd6c6906e55f...`](https://sepolia.basescan.org/tx/0xedebd6c6906e55f66e89236857d61d7c6d9e4759f636cb993c01e8cc57fb043e) |
+| **Deployed** | 2026-04-03 |
+| **Fee** | Free (testnet phase) |
 
 ---
 
@@ -24,7 +32,8 @@ deploypage/
 │   └── health.js             # Vercel serverless: /api/health
 ├── public/
 │   └── index.html            # Landing page (static, Vercel-served)
-├── deployments/              # Created after deploy (gitignored in .env)
+├── deployments/
+│   └── base-sepolia.json     # Deployment record
 ├── hardhat.config.js
 ├── vercel.json
 ├── .env.example
@@ -33,129 +42,45 @@ deploypage/
 
 ---
 
-## Quick Start
-
-### 1. Install dependencies
-
-```bash
-npm install
-```
-
-### 2. Configure environment
-
-```bash
-cp .env.example .env
-# Edit .env with your private key and RPC URL
-```
-
-### 3. Deploy smart contract to Base Sepolia
-
-```bash
-npm run deploy:testnet
-```
-
-This will:
-- Deploy `DeployPage.sol` to Base Sepolia testnet
-- Save deployment info to `deployments/base-sepolia.json`
-- Attempt contract verification on Basescan (if API key provided)
-
-After deployment, copy the contract address to your Vercel environment variable:
-```
-NEXT_PUBLIC_CONTRACT_ADDRESS=0x...your-deployed-address...
-```
-
-### 4. Run tests
-
-```bash
-npm test
-```
-
-### 5. Deploy to Vercel
-
-```bash
-npx vercel
-```
-
-Set these environment variables in Vercel dashboard:
-- `BASE_SEPOLIA_RPC` — `https://sepolia.base.org`
-- `NEXT_PUBLIC_CONTRACT_ADDRESS` — deployed contract address
-- `NEXT_PUBLIC_CHAIN_ID` — `84532`
-
----
-
-## Smart Contract
-
-### `DeployPage.sol`
-
-Deployed on **Base Sepolia** (Chain ID: 84532).
-
-#### Key functions
+## Contract Functions
 
 | Function | Description |
 |---|---|
 | `createPage(address, title, description, symbol, pageType, ctaLabel, ctaUrl)` | Register a new landing page |
 | `getPage(address)` | Read page data |
-| `updatePage(address, title, description, ctaLabel, ctaUrl)` | Update page (creator or owner only) |
+| `updatePage(address, title, description, ctaLabel, ctaUrl)` | Update page (creator/owner only) |
 | `deactivatePage(address)` | Deactivate a page |
-| `getPagesBy(creator)` | Get all pages by a creator |
+| `getPagesBy(creator)` | Get all pages by creator |
 | `totalPages()` | Total registered pages |
-| `getPagesPaginated(offset, limit)` | Paginated list |
-
-#### Page struct
-
-```solidity
-struct Page {
-    address contractAddress;
-    string  title;
-    string  description;
-    string  symbol;
-    string  pageType;    // "ERC-20", "ERC-721", "ERC-1155", "CUSTOM"
-    string  ctaLabel;
-    string  ctaUrl;
-    bool    active;
-    uint256 createdAt;
-    uint256 updatedAt;
-}
-```
-
-#### Fee
-
-Page creation is **free** during testnet phase. The owner can set a fee via `setFee()` before mainnet launch.
+| `getPagesPaginated(offset, limit)` | Paginated listing |
 
 ---
 
-## Get Base Sepolia ETH (Testnet)
+## Deploy to Vercel
 
-- [Coinbase Faucet](https://www.coinbase.com/faucets/base-ethereum-goerli-faucet)
-- [QuickNode Faucet](https://faucet.quicknode.com/base/sepolia)
-- [Superchain Faucet](https://app.optimism.io/faucet)
+```bash
+git clone https://github.com/yusufsafary/deploypage
+cd deploypage
+npx vercel
+```
+
+Set Vercel env vars:
+```
+NEXT_PUBLIC_CONTRACT_ADDRESS=0xB720952ae3c1dA89C0C452cDEeE47b99F1A8E69D
+NEXT_PUBLIC_CHAIN_ID=84532
+BASE_SEPOLIA_RPC=https://sepolia.base.org
+```
 
 ---
 
 ## API Endpoints (Vercel Serverless)
 
-### `GET /api/health`
-Returns service status and contract address.
-
-### `GET /api/page?action=info`
-Returns contract info: total pages, fee, network.
-
-### `GET /api/page?address=0x...`
-Returns page data for a registered contract address.
-
----
-
-## Vercel Deployment
-
-The `vercel.json` is configured to:
-- Serve `public/index.html` as the root static page
-- Route `/api/*` to Vercel serverless functions
-- Add security headers
-- Support SPA-style routing
+- **GET** `/api/health` — Service status
+- **GET** `/api/page?action=info` — Contract info (total pages, fee)
+- **GET** `/api/page?address=0x...` — Read page data for a contract
 
 ---
 
 ## License
 
-MIT — Built by [DeployPage](https://deploypage.xyz)  
-Owner: `0x715c44484d1c126b75c8989da40489c7b38592fd`
+MIT — Owner: `0x715C44484d1c126b75c8989dA40489c7B38592FD`
