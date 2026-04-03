@@ -5,7 +5,7 @@ pragma solidity ^0.8.20;
  * @title DeployPage
  * @notice Registers contract addresses as landing pages on Base Sepolia testnet
  * @dev Deployed on Base Sepolia (chain ID: 84532)
- * @author DeployPage — 0x715c44484d1c126b75c8989da40489c7b38592fd
+ * @author DeployPage — 0x715C44484d1c126b75c8989dA40489c7B38592FD
  */
 contract DeployPage {
     address public owner;
@@ -51,7 +51,7 @@ contract DeployPage {
     }
 
     constructor() {
-        owner = 0x715c44484d1c126b75c8989da40489c7b38592fd;
+        owner = 0x715C44484d1c126b75c8989dA40489c7B38592FD;
     }
 
     /**
